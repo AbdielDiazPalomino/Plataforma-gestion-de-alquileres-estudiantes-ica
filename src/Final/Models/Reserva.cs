@@ -3,6 +3,7 @@ namespace Final.Models;
 public class Reserva
 {
     public int Id { get; set; }
+
     public int UsuarioId { get; set; }
     public Usuario Usuario { get; set; }
 
@@ -12,6 +13,10 @@ public class Reserva
     public DateTime FechaInicio { get; set; }
     public DateTime FechaFin { get; set; }
 
+    // Se llena automáticamente al crear la reserva
     public decimal PrecioTotal { get; set; }
-    public string Estado { get; set; } // pendiente, pagado, cancelado
+
+    // Estados permitidos sin pasarela de pago
+    public string Estado { get; set; } = "pendiente"; 
+    // otros: "confirmada", "cancelada"
 }

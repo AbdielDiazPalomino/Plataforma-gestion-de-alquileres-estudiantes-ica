@@ -3,9 +3,20 @@ namespace Final.Models;
 public class Usuario
 {
     public int Id { get; set; }
+
     public string Nombre { get; set; }
     public string Email { get; set; }
+
     public string PasswordHash { get; set; }
-    public string Rol { get; set; } // estudiante, propietario, admin
-    public bool Estado { get; set; } = true; // activo/deshabilitado
+
+    // Solo 1 tipo de usuario real (puede alquilar y publicar propiedades)
+    public bool EsAdmin { get; set; } = false;
+
+    // Para posible deshabilitación en futuro
+    public bool Activo { get; set; } = true;
+
+    // Navegación
+    public List<Propiedad> PropiedadesPublicadas { get; set; }
+    public List<Reserva> Reservas { get; set; }
+    public List<Resena> Resenas { get; set; }
 }
