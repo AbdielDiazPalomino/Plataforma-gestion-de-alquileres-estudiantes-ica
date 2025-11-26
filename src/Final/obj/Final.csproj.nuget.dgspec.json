@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj": {}
+    "d:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj": {}
   },
   "projects": {
-    "D:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj": {
+    "d:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj",
+        "projectUniqueName": "d:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj",
         "projectName": "Final",
-        "projectPath": "D:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj",
+        "projectPath": "d:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\Final.csproj",
         "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-        "outputPath": "D:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\obj\\",
+        "outputPath": "d:\\Abdiel Uni\\Ciclo 6\\Lenguajes de Programación\\Proyecto final\\Plataforma-gestion-de-alquileres-estudiantes-ica\\src\\Final\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -49,9 +49,19 @@
               "target": "Package",
               "version": "[8.0.19, )"
             },
-            "Microsoft.EntityFrameworkCore.Tools": {
+            "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.4, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
