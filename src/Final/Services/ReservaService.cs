@@ -123,7 +123,7 @@ namespace Final.Services
                  (fechaInicio <= r.FechaInicio && fechaFin >= r.FechaFin)));
         }
 
-        private ReservaListDto MapToListDto(Reserva reserva, Propiedad propiedad = null)
+        private ReservaListDto MapToListDto(Reserva reserva, Propiedad? propiedad = null)
         {
             return new ReservaListDto
             {
