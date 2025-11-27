@@ -1,3 +1,4 @@
+// Repositories/GenericRepository.cs
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -24,12 +25,12 @@ namespace Final.Repositories
             return await _dbSet.Where(predicate).ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
         }

@@ -1,3 +1,4 @@
+// IUsuarioRepository.cs
 using Final.Models;
 
 namespace Final.Repositories

@@ -1,3 +1,4 @@
+// IReservaRepository.cs
 using Final.Models;
 
 namespace Final.Repositories
@@ -6,5 +7,7 @@ namespace Final.Repositories
     {
         Task<IEnumerable<Reserva>> GetReservasPorUsuarioAsync(int usuarioId);
         Task<IEnumerable<Reserva>> GetReservasPorPropiedadAsync(int propiedadId);
+        Task<IEnumerable<Reserva>> GetByPropietarioAsync(int propietarioId);
+        
     }
 }
