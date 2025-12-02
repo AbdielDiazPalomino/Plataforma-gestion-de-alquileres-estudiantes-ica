@@ -13,7 +13,41 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "StudentHome API",
+        Version = "v1"
+    });
+
+    // 🔐 CONFIGURACIÓN PARA ACTIVAR EL BOTÓN AUTHORIZE
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Ingrese el token JWT con el formato: Bearer {token}"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
 builder.Services.AddControllers();
 var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(defaultConn) || defaultConn.Contains("TU_SERVIDOR"))
@@ -83,6 +117,38 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Seed admin user in Development for quick testing
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var usuarioRepo = scope.ServiceProvider.GetRequiredService<IUsuarioRepository>();
+    var usuarioService = scope.ServiceProvider.GetRequiredService<IUsuarioService>();
+
+    // Create default admin if not exists
+    var adminEmail = "admin@local.dev";
+    var existing = await usuarioRepo.GetByEmailAsync(adminEmail);
+    if (existing == null)
+    {
+        var registerDto = new Final.DTOs.Usuario.UsuarioRegisterDto
+        {
+            Nombre = "Administrador",
+            Email = adminEmail,
+            Password = "Admin123!"
+        };
+
+        var created = await usuarioService.RegisterAsync(registerDto);
+
+        // mark as admin
+        var admin = await usuarioRepo.GetByEmailAsync(adminEmail);
+        if (admin != null)
+        {
+            admin.EsAdmin = true;
+            usuarioRepo.Update(admin);
+            await usuarioRepo.SaveChangesAsync();
+        }
+    }
+}
 
 var summaries = new[]
 {
