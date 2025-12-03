@@ -49,18 +49,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddControllers();
-var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(defaultConn) || defaultConn.Contains("TU_SERVIDOR"))
-{
-    // Use in-memory DB for development/testing when no SQL Server is configured
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseInMemoryDatabase("StudentHomeInMemory"));
-}
-else
-{
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(defaultConn));
-}
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    )
+);
 
 // En Program.cs
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
@@ -126,7 +120,7 @@ if (app.Environment.IsDevelopment())
     var usuarioService = scope.ServiceProvider.GetRequiredService<IUsuarioService>();
 
     // Create default admin if not exists
-    var adminEmail = "admin@local.dev";
+    var adminEmail = "admin@gmail.com";
     var existing = await usuarioRepo.GetByEmailAsync(adminEmail);
     if (existing == null)
     {
@@ -134,7 +128,7 @@ if (app.Environment.IsDevelopment())
         {
             Nombre = "Administrador",
             Email = adminEmail,
-            Password = "Admin123!"
+            Password = "admin123"
         };
 
         var created = await usuarioService.RegisterAsync(registerDto);

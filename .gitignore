@@ -1,18 +1,80 @@
-# ASP.NET Core y Visual Studio
+#############################
+# .NET / ASP.NET Core
+#############################
+
+# Build folders
+bin/
+obj/
 [Bb]in/
 [Oo]bj/
-.vs/
-*.suo
+
+# User-specific files
 *.user
+*.userosscache
+*.suo
+*.cache
+*.plist
+
+# Visual Studio settings
+.vs/
 *.sln.docstates
 
+# Rider / JetBrains
+.idea/
+
+#############################
+# Entity Framework Core
+#############################
+
+# DO NOT ignore migrations folder
+# Migrations/
+
+#############################
+# Logs / Temp
+#############################
+
+*.log
+*.tlog
+*.tmp
+*.temp
+*.pid
+*.seed
+
+#############################
+# OS files
+#############################
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+#############################
 # NuGet
+#############################
+
 *.nupkg
-# The packages folder can be ignored because of Package Restore
+*.snupkg
+# NuGet packages folder (auto-restore)
 **/packages/*
-# except build/, which is used as an MSBuild target.
 !**/packages/build/
 
-# Temporary files
-*.tmp
-*.log
+#############################
+# Publish output
+#############################
+
+/publish/
+/out/
+
+#############################
+# Others
+#############################
+
+.env
+*.db
+*.sqlite
