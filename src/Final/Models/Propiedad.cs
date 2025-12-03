@@ -8,18 +8,16 @@ public class Propiedad
     public int PropietarioId { get; set; }
     public Usuario Propietario { get; set; }
 
-    // Información general
     public string Titulo { get; set; }
     public string Descripcion { get; set; }
 
-    // Ubicación completa
-    public string Departamento { get; set; } = "Ica"; // fijo
-    public string Provincia { get; set; } = "Ica";    // fijo
-    public string Distrito { get; set; }              // ejemplo: "La Tinguiña", "Pachacútec"
-    public string Direccion { get; set; }             // Av, Calle, Urb
+    public string Departamento { get; set; } = "Ica"; 
+    public string Provincia { get; set; } = "Ica";    
+    public string Distrito { get; set; } // ejemplo: "La Tinguiña", "Pachacútec"
+    public string Direccion { get; set; }  // Av, Calle, Urb
 
     // Opcional pero recomendado
-    public string Referencia { get; set; }            // "por la UNSLG", "cerca al mall", etc.
+    public string Referencia { get; set; } // "por la UNSLG", "cerca al mall", etc.
 
     // Coordenadas exactas (para mostrar en mapa)
     public double Latitud { get; set; }
@@ -37,9 +35,8 @@ public class Propiedad
 
     // Características adicionales
     public bool AceptaMascotas { get; set; }
-    public bool SoloEstudiantes { get; set; } = true; // tu sistema es de estudiantes
+    public bool SoloEstudiantes { get; set; } = true; 
 
-    // Fotos (mejor en una tabla aparte, pero puedes empezar simple)
     public List<PropiedadFoto> Fotos { get; set; }
 
     // Estado
