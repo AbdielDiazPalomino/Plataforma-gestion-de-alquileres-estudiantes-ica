@@ -12,6 +12,6 @@ namespace Final.Services
         Task<List<ReservaListDto>> GetByUsuarioAsync(int usuarioId);
         Task<List<ReservaListDto>> GetByPropietarioAsync(int propietarioId);
         Task<bool> ConfirmarReservaAsync(int id, int propietarioId);
-        Task<bool> VerificarDisponibilidadAsync(int propiedadId, DateTime fechaInicio, DateTime fechaFin);
+        Task<bool> VerificarDisponibilidadAsync(int propiedadId, DateOnly fechaInicio, DateOnly fechaFin);
     }
 }

@@ -24,15 +24,13 @@ namespace Final.Services
 
         public async Task<DashboardStats> GetStatsAsync()
         {
-            var usuariosTask = _usuarioRepository.GetAllAsync();
-            var propiedadesTask = _propiedadRepository.GetAllAsync();
-            var reservasTask = _reservaRepository.GetAllAsync();
+            // Avoid running multiple EF Core operations in parallel on the same
+            // DbContext (causes "A second operation was started on this context instance...").
+            // Execute sequentially or use repository methods that run aggregations in the DB.
 
-            await Task.WhenAll(usuariosTask, propiedadesTask, reservasTask);
-
-            var usuarios = await usuariosTask;
-            var propiedades = await propiedadesTask;
-            var reservas = await reservasTask;
+            var usuarios = await _usuarioRepository.GetAllAsync();
+            var propiedades = await _propiedadRepository.GetAllAsync();
+            var reservas = await _reservaRepository.GetAllAsync();
 
             return new DashboardStats
             {
@@ -46,15 +44,10 @@ namespace Final.Services
 
         public async Task<List<PropiedadStats>> GetTopPropiedadesAsync()
         {
-            var propiedadesTask = _propiedadRepository.GetAllAsync();
-            var reservasTask = _reservaRepository.GetAllAsync();
-            var resenasTask = _resenaRepository.GetAllAsync();
-
-            await Task.WhenAll(propiedadesTask, reservasTask, resenasTask);
-
-            var propiedades = await propiedadesTask;
-            var reservas = await reservasTask;
-            var resenas = await resenasTask;
+            // Execute queries sequentially to avoid DbContext concurrency issues.
+            var propiedades = await _propiedadRepository.GetAllAsync();
+            var reservas = await _reservaRepository.GetAllAsync();
+            var resenas = await _resenaRepository.GetAllAsync();
 
             return propiedades
                 .Where(p => p.Aprobada)

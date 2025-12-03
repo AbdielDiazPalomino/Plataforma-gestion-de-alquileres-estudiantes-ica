@@ -104,8 +104,8 @@ public class ReservasController : ControllerBase
     [HttpGet("disponibilidad")]
     public async Task<IActionResult> VerificarDisponibilidad(
         [FromQuery] int propiedadId,
-        [FromQuery] DateTime fechaInicio,
-        [FromQuery] DateTime fechaFin)
+        [FromQuery] DateOnly fechaInicio,
+        [FromQuery] DateOnly fechaFin)
     {
         try
         {

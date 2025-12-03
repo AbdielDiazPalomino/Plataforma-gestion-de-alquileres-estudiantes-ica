@@ -25,7 +25,7 @@ namespace Final.Services
             var tieneReserva = reservas.Any(r => 
                 r.PropiedadId == dto.PropiedadId && 
                 r.Estado == "confirmada" && 
-                r.FechaFin < DateTime.Now);
+                r.FechaFin < DateOnly.FromDateTime(DateTime.Now));
 
             if (!tieneReserva)
                 throw new ArgumentException("Solo puedes dejar reseñas en propiedades donde hayas completado una reserva");

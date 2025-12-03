@@ -10,8 +10,8 @@ public class Reserva
     public int PropiedadId { get; set; }
     public Propiedad Propiedad { get; set; }
 
-    public DateTime FechaInicio { get; set; }
-    public DateTime FechaFin { get; set; }
+    public DateOnly FechaInicio { get; set; }
+    public DateOnly FechaFin { get; set; }
 
     // Se llena automáticamente al crear la reserva
     public decimal PrecioTotal { get; set; }

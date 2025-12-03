@@ -12,6 +12,7 @@ namespace Final.Repositories
         {
             return await _dbSet
                 .Include(r => r.Propiedad)
+                .Include(r => r.Usuario)
                 .Where(r => r.UsuarioId == usuarioId)
                 .ToListAsync();
         }
