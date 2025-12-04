@@ -38,9 +38,32 @@ namespace Final.Services
 
             usuario.PasswordHash = HashPassword(dto.Password);
 
+            // CORRECCIÓN: Usa AddAsync (ya incluye SaveChanges)
             await _usuarioRepository.AddAsync(usuario);
-            await _usuarioRepository.SaveChangesAsync();
-            
+
+            return MapToResponseDto(usuario);
+        }
+
+        public async Task<UsuarioResponseDto> UpdateProfileAsync(int id, UsuarioUpdateDto dto)
+        {
+            var usuario = await _usuarioRepository.GetByIdAsync(id);
+            if (usuario == null)
+                throw new ArgumentException("Usuario no encontrado");
+
+            // Verificar si el email ya existe en otro usuario
+            if (usuario.Email != dto.Email)
+            {
+                var existingUser = await _usuarioRepository.GetByEmailAsync(dto.Email);
+                if (existingUser != null && existingUser.Id != id)
+                    throw new ArgumentException("El email ya está registrado");
+            }
+
+            usuario.Nombre = dto.Nombre;
+            usuario.Email = dto.Email;
+
+            // CORRECCIÓN: Usa UpdateAsync (ya incluye SaveChanges)
+            await _usuarioRepository.UpdateAsync(usuario);
+
             return MapToResponseDto(usuario);
         }
 
@@ -75,8 +98,9 @@ namespace Final.Services
             usuario.Nombre = dto.Nombre;
             usuario.Email = dto.Email;
 
-            _usuarioRepository.Update(usuario);
-            return await _usuarioRepository.SaveChangesAsync() > 0;
+            // CORRECCIÓN: Usa UpdateAsync (ya incluye SaveChanges)
+            await _usuarioRepository.UpdateAsync(usuario);
+            return true;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -85,8 +109,9 @@ namespace Final.Services
             if (usuario == null)
                 throw new ArgumentException("Usuario no encontrado");
 
-            _usuarioRepository.Remove(usuario);
-            return await _usuarioRepository.SaveChangesAsync() > 0;
+            // CORRECCIÓN: Usa DeleteAsync (ya incluye SaveChanges)
+            await _usuarioRepository.DeleteAsync(id);
+            return true;
         }
 
         public async Task<bool> CambiarPasswordAsync(int id, string currentPassword, string newPassword)
@@ -99,8 +124,10 @@ namespace Final.Services
                 throw new ArgumentException("Contraseña actual incorrecta");
 
             usuario.PasswordHash = HashPassword(newPassword);
-            _usuarioRepository.Update(usuario);
-            return await _usuarioRepository.SaveChangesAsync() > 0;
+            
+            // CORRECCIÓN: Usa UpdateAsync (ya incluye SaveChanges)
+            await _usuarioRepository.UpdateAsync(usuario);
+            return true;
         }
 
         public async Task<string> GenerarTokenRecuperacionAsync(string email)
@@ -135,8 +162,10 @@ namespace Final.Services
                 throw new ArgumentException("Usuario no encontrado");
 
             usuario.Activo = activo;
-            _usuarioRepository.Update(usuario);
-            return await _usuarioRepository.SaveChangesAsync() > 0;
+            
+            // CORRECCIÓN: Usa UpdateAsync (ya incluye SaveChanges)
+            await _usuarioRepository.UpdateAsync(usuario);
+            return true;
         }
 
         private string GenerateJwtToken(Usuario usuario)

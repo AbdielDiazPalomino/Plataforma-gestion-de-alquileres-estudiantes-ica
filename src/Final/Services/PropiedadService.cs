@@ -1,8 +1,9 @@
-// Services/PropiedadService.cs (corregido)
+// Services/PropiedadService.cs
 using Final.DTOs.Propiedad;
 using Final.Models;
 using Final.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Final.Data;
 
 namespace Final.Services
 {
@@ -10,11 +11,16 @@ namespace Final.Services
     {
         private readonly IPropiedadRepository _propiedadRepository;
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly AppDbContext _context;
 
-        public PropiedadService(IPropiedadRepository propiedadRepository, IUsuarioRepository usuarioRepository)
+        public PropiedadService(
+            IPropiedadRepository propiedadRepository, 
+            IUsuarioRepository usuarioRepository,
+            AppDbContext context)
         {
             _propiedadRepository = propiedadRepository;
             _usuarioRepository = usuarioRepository;
+            _context = context;
         }
 
         public async Task<PropiedadDetailDto> CreateAsync(PropiedadCreateDto dto, int propietarioId)
@@ -47,8 +53,8 @@ namespace Final.Services
                 Fotos = dto.Fotos?.Select(f => new PropiedadFoto { Url = f }).ToList() ?? new List<PropiedadFoto>()
             };
 
+            // CORRECCIÓN: Usa AddAsync (ya incluye SaveChanges)
             await _propiedadRepository.AddAsync(propiedad);
-            await _propiedadRepository.SaveChangesAsync();
             
             return await MapToDetailDto(propiedad);
         }
@@ -78,9 +84,9 @@ namespace Final.Services
             propiedad.AceptaMascotas = dto.AceptaMascotas;
             propiedad.SoloEstudiantes = dto.SoloEstudiantes;
 
-            _propiedadRepository.Update(propiedad);
-            await _propiedadRepository.SaveChangesAsync();
-            
+            // CORRECCIÓN: Usa UpdateAsync (ya incluye SaveChanges)
+            await _propiedadRepository.UpdateAsync(propiedad);
+
             return await MapToDetailDto(propiedad);
         }
 
@@ -93,8 +99,10 @@ namespace Final.Services
             if (propiedad.PropietarioId != userId)
                 throw new UnauthorizedAccessException("No tienes permisos para eliminar esta propiedad");
 
-            _propiedadRepository.Remove(propiedad);
-            return await _propiedadRepository.SaveChangesAsync() > 0;
+            // CORRECCIÓN: Usa DeleteAsync (ya incluye SaveChanges)
+            await _propiedadRepository.DeleteAsync(id);
+            
+            return true;
         }
 
         public async Task<PropiedadDetailDto> GetByIdAsync(int id)
@@ -117,6 +125,12 @@ namespace Final.Services
         public async Task<List<PropiedadListDto>> GetByFiltersAsync(decimal? precioMin, decimal? precioMax, int? habitaciones, string distrito, bool? amoblado)
         {
             var propiedades = await _propiedadRepository.BuscarPorFiltrosAsync(distrito, precioMin, precioMax, habitaciones);
+            
+            if (amoblado.HasValue)
+            {
+                propiedades = propiedades.Where(p => p.Amoblado == amoblado.Value).ToList();
+            }
+            
             return propiedades.Where(p => p.Aprobada)
                             .Select(MapToListDto)
                             .ToList();
@@ -135,14 +149,32 @@ namespace Final.Services
                 throw new ArgumentException("Propiedad no encontrada");
 
             propiedad.Aprobada = aprobada;
-            _propiedadRepository.Update(propiedad);
-            return await _propiedadRepository.SaveChangesAsync() > 0;
+            await _propiedadRepository.UpdateAsync(propiedad);
+            return true;
         }
 
         public async Task<List<PropiedadListDto>> GetPendientesAprobacionAsync()
         {
             var propiedades = await _propiedadRepository.GetPendientesAprobacionAsync();
             return propiedades.Select(MapToListDto).ToList();
+        }
+
+        public async Task UploadPhotosAsync(int id, List<string> photoUrls)
+        {
+            var propiedad = await _propiedadRepository.GetByIdAsync(id);
+            if (propiedad == null)
+                throw new ArgumentException("Propiedad no encontrada");
+
+            foreach (var url in photoUrls)
+            {
+                propiedad.Fotos.Add(new PropiedadFoto
+                {
+                    Url = url,
+                    PropiedadId = id
+                });
+            }
+
+            await _propiedadRepository.UpdateAsync(propiedad);
         }
 
         private async Task<PropiedadDetailDto> MapToDetailDto(Propiedad propiedad)
@@ -183,6 +215,9 @@ namespace Final.Services
 
         private PropiedadListDto MapToListDto(Propiedad propiedad)
         {
+            // TODO: Calcular calificación promedio real de las reseñas
+            double calificacionPromedio = 0;
+
             return new PropiedadListDto
             {
                 Id = propiedad.Id,
@@ -192,9 +227,23 @@ namespace Final.Services
                 Direccion = propiedad.Direccion,
                 Latitud = propiedad.Latitud,
                 Longitud = propiedad.Longitud,
+                Banos = propiedad.Banos,
+                AceptaMascotas = propiedad.AceptaMascotas,
                 PrimeraFoto = propiedad.Fotos?.FirstOrDefault()?.Url ?? string.Empty,
-                CalificacionPromedio = 0 // Se calcularía en una implementación real
+                CalificacionPromedio = calificacionPromedio
             };
+        }
+
+        public async Task<List<Propiedad>> GetAllPropiedadesAsync()
+        {
+            var propiedades = await _propiedadRepository.GetAllAsync();
+            return propiedades.ToList();
+        }
+
+        public async Task<Propiedad?> GetPropiedadForUpdateAsync(int id)
+        {
+            // El repositorio ya debería incluir las fotos si hereda de GenericRepository
+            return await _propiedadRepository.GetByIdAsync(id);
         }
     }
 }

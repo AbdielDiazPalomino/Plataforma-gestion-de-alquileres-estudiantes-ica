@@ -1,9 +1,10 @@
-namespace Final.DTOs.Usuario;
-
-public class UsuarioResponseDto
+namespace Final.DTOs.Usuario
 {
-    public int Id { get; set; }
-    public string Nombre { get; set; }
-    public string Email { get; set; }
-    public bool EsAdmin { get; set; }
+    public class UsuarioResponseDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public bool EsAdmin { get; set; }
+    }
 }

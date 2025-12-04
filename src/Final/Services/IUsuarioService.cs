@@ -16,5 +16,6 @@ namespace Final.Services
         Task<bool> RecuperarPasswordAsync(string token, string newPassword);
         Task<List<UsuarioResponseDto>> GetAllAsync();
         Task<bool> ToggleActivoAsync(int id, bool activo);
+        Task<UsuarioResponseDto> UpdateProfileAsync(int id, UsuarioUpdateDto dto);
     }
 }

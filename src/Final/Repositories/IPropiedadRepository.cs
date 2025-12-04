@@ -1,14 +1,15 @@
-// IPropiedadRepository.cs
+// Repositories/IPropiedadRepository.cs
 using Final.Models;
 
 namespace Final.Repositories
 {
     public interface IPropiedadRepository : IGenericRepository<Propiedad>
     {
-        Task<IEnumerable<Propiedad>> BuscarPorFiltrosAsync(string distrito, decimal? precioMin, decimal? precioMax, int? habitaciones);
-        Task<IEnumerable<Propiedad>> GetByPropietarioAsync(int propietarioId);
-        Task<IEnumerable<Propiedad>> GetPendientesAprobacionAsync();
-        Task<IEnumerable<Resena>> GetResenasByPropiedadIdAsync(int propiedadId);
-        Task<IEnumerable<Resena>> GetAllResenasAsync();
+        // Métodos específicos de Propiedad
+        Task<List<Propiedad>> BuscarPorFiltrosAsync(string distrito, decimal? precioMin, decimal? precioMax, int? habitaciones);
+        Task<List<Propiedad>> GetByPropietarioAsync(int propietarioId);
+        Task<List<Propiedad>> GetPendientesAprobacionAsync();
+        Task<List<Resena>> GetResenasByPropiedadIdAsync(int propiedadId);
+        
     }
 }

@@ -41,8 +41,8 @@ namespace Final.Services
                 Estado = "pendiente"
             };
 
+            // CORRECCIÓN: Usa AddAsync (ya incluye SaveChanges)
             await _reservaRepository.AddAsync(reserva);
-            await _reservaRepository.SaveChangesAsync();
             
             return MapToListDto(reserva);
         }
@@ -62,8 +62,11 @@ namespace Final.Services
                 throw new UnauthorizedAccessException("No tienes permisos para cancelar esta reserva");
 
             reserva.Estado = "cancelada";
-            _reservaRepository.Update(reserva);
-            return await _reservaRepository.SaveChangesAsync() > 0;
+            
+            // CORRECCIÓN: Usa UpdateAsync (ya incluye SaveChanges)
+            await _reservaRepository.UpdateAsync(reserva);
+            
+            return true;
         }
 
         public async Task<ReservaListDto> GetByIdAsync(int id)
@@ -108,8 +111,11 @@ namespace Final.Services
                 throw new UnauthorizedAccessException("No tienes permisos para confirmar esta reserva");
 
             reserva.Estado = "confirmada";
-            _reservaRepository.Update(reserva);
-            return await _reservaRepository.SaveChangesAsync() > 0;
+            
+            // CORRECCIÓN: Usa UpdateAsync (ya incluye SaveChanges)
+            await _reservaRepository.UpdateAsync(reserva);
+            
+            return true;
         }
 
         public async Task<bool> VerificarDisponibilidadAsync(int propiedadId, DateTime fechaInicio, DateTime fechaFin)

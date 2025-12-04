@@ -1,4 +1,4 @@
-// Services/IPropiedadService.cs
+// Services/IPropiedadService.cs (actualizado)
 using Final.DTOs.Propiedad;
 using Final.Models;
 
@@ -15,5 +15,8 @@ namespace Final.Services
         Task<List<PropiedadListDto>> GetByPropietarioAsync(int propietarioId);
         Task<bool> AprobarPropiedadAsync(int id, bool aprobada);
         Task<List<PropiedadListDto>> GetPendientesAprobacionAsync();
+        Task<List<Propiedad>> GetAllPropiedadesAsync();
+        Task<Propiedad?> GetPropiedadForUpdateAsync(int id);
+        Task UploadPhotosAsync(int id, List<string> photoUrls);
     }
 }

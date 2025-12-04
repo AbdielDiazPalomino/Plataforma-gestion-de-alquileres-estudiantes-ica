@@ -10,6 +10,8 @@ public class PropiedadListDto
 
     public double Latitud { get; set; }
     public double Longitud { get; set; }
+    public int Banos { get; set; }
+    public bool AceptaMascotas { get; set; }
 
     public string PrimeraFoto { get; set; }
     public double CalificacionPromedio { get; set; }

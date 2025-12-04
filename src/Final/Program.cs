@@ -1,4 +1,6 @@
 using Final.Services;
+using Final.Data;
+using Final.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,16 +9,34 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// En Program.cs
+// ¡IMPORTANTE! esto hace que funcionen las API Controllers
+builder.Services.AddControllers();
+
+
+
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPropiedadService, PropiedadService>();
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IResenaService, ResenaService>();
+
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
+
+// Configurar PostgreSQL
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("PostgreSQLConnection"),
+        npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorCodesToAdd: null);
+        }
+    ));
 
 var app = builder.Build();
 
@@ -29,6 +49,36 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// ¡IMPORTANTE! Agrega autenticación y autorización si las usas
+// app.UseAuthentication();
+// app.UseAuthorization();
+
+// CREA TABLAS AUTOMÁTICAMENTE
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<AppDbContext>();
+        
+        // Esto aplica migraciones automáticamente
+        // Si no hay tablas, las crea
+        // Si hay migraciones pendientes, las aplica
+        dbContext.Database.Migrate();
+        
+        Console.WriteLine("Base de datos migrada exitosamente");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al migrar la base de datos: {ex.Message}");
+        throw;
+    }
+}
+
+// Mapea los controladores API 
+app.MapControllers();
+
+
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -36,7 +86,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

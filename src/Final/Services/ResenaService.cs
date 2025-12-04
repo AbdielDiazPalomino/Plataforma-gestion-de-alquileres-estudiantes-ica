@@ -1,4 +1,3 @@
-// Services/ResenaService.cs (corregido)
 using Final.DTOs.Resena;
 using Final.Models;
 using Final.Repositories;
@@ -9,31 +8,38 @@ namespace Final.Services
     {
         private readonly IResenaRepository _resenaRepository;
         private readonly IReservaRepository _reservaRepository;
-        private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IPropiedadRepository _propiedadRepository;
 
-        public ResenaService(IResenaRepository resenaRepository, IReservaRepository reservaRepository, IUsuarioRepository usuarioRepository)
+        public ResenaService(
+            IResenaRepository resenaRepository,
+            IReservaRepository reservaRepository,
+            IPropiedadRepository propiedadRepository)
         {
             _resenaRepository = resenaRepository;
             _reservaRepository = reservaRepository;
-            _usuarioRepository = usuarioRepository;
+            _propiedadRepository = propiedadRepository;
         }
 
-        public async Task<ResenaDto> CreateAsync(ResenaCreateDto dto, int usuarioId)
+        public async Task<Resena> CreateAsync(ResenaCreateDto dto, int usuarioId)
         {
-            // Verificar que el usuario ha tenido una reserva en esta propiedad
-            var reservas = await _reservaRepository.GetReservasPorUsuarioAsync(usuarioId);
-            var tieneReserva = reservas.Any(r => 
-                r.PropiedadId == dto.PropiedadId && 
-                r.Estado == "confirmada" && 
-                r.FechaFin < DateTime.Now);
+            // Validar que la propiedad existe
+            var propiedad = await _propiedadRepository.GetByIdAsync(dto.PropiedadId);
+            if (propiedad == null)
+                throw new ArgumentException("Propiedad no encontrada");
 
-            if (!tieneReserva)
-                throw new ArgumentException("Solo puedes dejar reseñas en propiedades donde hayas completado una reserva");
+            // Validar que el usuario tenga una reserva completada
+            var tieneReservaCompletada = await _reservaRepository.UsuarioTieneReservaCompletadaAsync(usuarioId, dto.PropiedadId);
+            if (!tieneReservaCompletada)
+                throw new ArgumentException("Debes tener una reserva completada para dejar una reseña");
 
-            // Verificar que no existe ya una reseña
-            var reseñaExistente = await _resenaRepository.GetByUsuarioAndPropiedadAsync(usuarioId, dto.PropiedadId);
-            if (reseñaExistente != null)
+            // Validar que el usuario no haya dejado ya una reseña
+            var yaReseno = await _resenaRepository.UsuarioYaResenoAsync(usuarioId, dto.PropiedadId);
+            if (yaReseno)
                 throw new ArgumentException("Ya has dejado una reseña para esta propiedad");
+
+            // Validar calificación
+            if (dto.Calificacion < 1 || dto.Calificacion > 5)
+                throw new ArgumentException("La calificación debe estar entre 1 y 5");
 
             var resena = new Resena
             {
@@ -44,13 +50,10 @@ namespace Final.Services
                 Fecha = DateTime.UtcNow
             };
 
-            await _resenaRepository.AddAsync(resena);
-            await _resenaRepository.SaveChangesAsync();
-            
-            return await MapToDto(resena);
+            return await _resenaRepository.AddAsync(resena);
         }
 
-        public async Task<ResenaDto> UpdateAsync(int id, ResenaCreateDto dto, int usuarioId)
+        public async Task<Resena> UpdateAsync(int id, ResenaUpdateDto dto, int usuarioId)
         {
             var resena = await _resenaRepository.GetByIdAsync(id);
             if (resena == null)
@@ -59,13 +62,17 @@ namespace Final.Services
             if (resena.UsuarioId != usuarioId)
                 throw new UnauthorizedAccessException("No tienes permisos para editar esta reseña");
 
+            // Validar calificación
+            if (dto.Calificacion < 1 || dto.Calificacion > 5)
+                throw new ArgumentException("La calificación debe estar entre 1 y 5");
+
             resena.Calificacion = dto.Calificacion;
             resena.Comentario = dto.Comentario;
 
             _resenaRepository.Update(resena);
             await _resenaRepository.SaveChangesAsync();
-            
-            return await MapToDto(resena);
+
+            return resena;
         }
 
         public async Task<bool> DeleteAsync(int id, int usuarioId)
@@ -78,7 +85,7 @@ namespace Final.Services
                 throw new UnauthorizedAccessException("No tienes permisos para eliminar esta reseña");
 
             _resenaRepository.Remove(resena);
-            return await _resenaRepository.SaveChangesAsync() > 0;
+            return await _resenaRepository.SaveChangesAsync();
         }
 
         public async Task<ResenaDto> GetByIdAsync(int id)
@@ -87,49 +94,48 @@ namespace Final.Services
             if (resena == null)
                 throw new ArgumentException("Reseña no encontrada");
 
-            return await MapToDto(resena);
+            return MapToDto(resena);
         }
 
         public async Task<List<ResenaDto>> GetByPropiedadAsync(int propiedadId)
         {
-            var resenas = await _resenaRepository.GetResenasPorPropiedadAsync(propiedadId);
-            var dtos = new List<ResenaDto>();
-
-            foreach (var resena in resenas)
-            {
-                dtos.Add(await MapToDto(resena));
-            }
-
-            return dtos;
+            var resenas = await _resenaRepository.GetByPropiedadAsync(propiedadId);
+            return resenas.Select(MapToDto).ToList();
         }
 
         public async Task<List<ResenaDto>> GetByUsuarioAsync(int usuarioId)
         {
             var resenas = await _resenaRepository.GetByUsuarioAsync(usuarioId);
-            var dtos = new List<ResenaDto>();
-
-            foreach (var resena in resenas)
-            {
-                dtos.Add(await MapToDto(resena));
-            }
-
-            return dtos;
+            return resenas.Select(MapToDto).ToList();
         }
 
         public async Task<double> GetCalificacionPromedioAsync(int propiedadId)
         {
-            var resenas = await _resenaRepository.GetResenasPorPropiedadAsync(propiedadId);
-            return resenas.Any() ? resenas.Average(r => r.Calificacion) : 0;
+            return await _resenaRepository.GetPromedioCalificacionAsync(propiedadId);
         }
 
-        private async Task<ResenaDto> MapToDto(Resena resena)
+        public async Task<bool> UsuarioPuedeResenarAsync(int usuarioId, int propiedadId)
         {
-            var usuario = await _usuarioRepository.GetByIdAsync(resena.UsuarioId);
+            // Verifica si el usuario puede dejar reseña:
+            // 1. Tiene una reserva completada
+            // 2. No ha dejado ya una reseña
+            var tieneReserva = await _reservaRepository.UsuarioTieneReservaCompletadaAsync(usuarioId, propiedadId);
+            var yaReseno = await _resenaRepository.UsuarioYaResenoAsync(usuarioId, propiedadId);
             
+            return tieneReserva && !yaReseno;
+        }
+
+        public async Task<bool> UsuarioYaResenoAsync(int usuarioId, int propiedadId)
+        {
+            return await _resenaRepository.UsuarioYaResenoAsync(usuarioId, propiedadId);
+        }
+
+        private ResenaDto MapToDto(Resena resena)
+        {
             return new ResenaDto
             {
                 Id = resena.Id,
-                UsuarioNombre = usuario?.Nombre ?? "Usuario desconocido",
+                UsuarioNombre = resena.Usuario?.Nombre ?? "Usuario",
                 Calificacion = resena.Calificacion,
                 Comentario = resena.Comentario,
                 Fecha = resena.Fecha

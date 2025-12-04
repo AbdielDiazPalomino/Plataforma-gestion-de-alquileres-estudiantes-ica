@@ -1,5 +1,5 @@
-// Services/DashboardService.cs
 using Final.Repositories;
+using Final.DTOs.Dashboard;
 
 namespace Final.Services
 {
@@ -22,7 +22,7 @@ namespace Final.Services
             _resenaRepository = resenaRepository;
         }
 
-        public async Task<DashboardStats> GetStatsAsync()
+        public async Task<DashboardStatsDto> GetStatsAsync()
         {
             var usuariosTask = _usuarioRepository.GetAllAsync();
             var propiedadesTask = _propiedadRepository.GetAllAsync();
@@ -34,7 +34,7 @@ namespace Final.Services
             var propiedades = await propiedadesTask;
             var reservas = await reservasTask;
 
-            return new DashboardStats
+            return new DashboardStatsDto
             {
                 TotalUsuarios = usuarios.Count(),
                 TotalPropiedades = propiedades.Count(),
@@ -44,7 +44,7 @@ namespace Final.Services
             };
         }
 
-        public async Task<List<PropiedadStats>> GetTopPropiedadesAsync()
+        public async Task<List<PropiedadStatsDto>> GetTopPropiedadesAsync()
         {
             var propiedadesTask = _propiedadRepository.GetAllAsync();
             var reservasTask = _reservaRepository.GetAllAsync();
@@ -58,7 +58,7 @@ namespace Final.Services
 
             return propiedades
                 .Where(p => p.Aprobada)
-                .Select(p => new PropiedadStats
+                .Select(p => new PropiedadStatsDto
                 {
                     PropiedadId = p.Id,
                     Titulo = p.Titulo,
