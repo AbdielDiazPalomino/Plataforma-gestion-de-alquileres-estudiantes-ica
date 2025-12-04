@@ -111,9 +111,8 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Sesión cerrada exitosamente" });
     }
 
-    /// <summary>
-    /// Solicitar recuperación de contraseña
-    /// </summary>
+    
+    // Solicitar recuperación de contraseña
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {

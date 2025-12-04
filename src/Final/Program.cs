@@ -6,12 +6,49 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+// Modificamos el Swagger para soportar JWT y colocar nuestro token de sesion
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { 
+        Title = "Final API", 
+        Version = "v1",
+        Description = "API para gestión de propiedades y reservas"
+    });
+
+    // Configurar autenticación JWT en Swagger para colocar el token
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // ¡IMPORTANTE! esto hace que funcionen las API Controllers
 builder.Services.AddControllers();
@@ -82,14 +119,13 @@ using (var scope = app.Services.CreateScope())
     {
         var dbContext = services.GetRequiredService<AppDbContext>();
         
-        // ✅ CAMBIA ESTO: Usa EnsureCreated() en lugar de Migrate()
         dbContext.Database.EnsureCreated();
         
-        Console.WriteLine("✅ Base de datos creada exitosamente");
+        Console.WriteLine("Base de datos creada exitosamente");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error al crear la base de datos: {ex.Message}");
+        Console.WriteLine($"Error al crear la base de datos: {ex.Message}");
         throw;
     }
 }
