@@ -17,12 +17,14 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPropiedadService, PropiedadService>();
-
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IResenaService, ResenaService>();
-
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IPropiedadRepository, PropiedadRepository>();
+builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
+builder.Services.AddScoped<IResenaRepository, ResenaRepository>();
 
 
 // Configurar PostgreSQL
