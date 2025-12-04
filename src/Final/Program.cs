@@ -17,8 +17,9 @@ builder.Services.AddEndpointsApiExplorer();
 // Modificamos el Swagger para soportar JWT y colocar nuestro token de sesion
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { 
-        Title = "Final API", 
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Final API",
         Version = "v1",
         Description = "API para gestión de propiedades y reservas"
     });
@@ -72,6 +73,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// CONFIGURACIÓN DE CORS 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+
+    // 🔵 Política SEPARADA para desarrollo SIN credenciales
+    options.AddPolicy("AllowAllDevelopment", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+        // NOTA: NO usar AllowCredentials() aquí
+    });
+});
+
+
+
 // Servicios
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPropiedadService, PropiedadService>();
@@ -107,6 +131,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAngularApp");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -118,9 +143,9 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = services.GetRequiredService<AppDbContext>();
-        
+
         dbContext.Database.EnsureCreated();
-        
+
         Console.WriteLine("Base de datos creada exitosamente");
     }
     catch (Exception ex)

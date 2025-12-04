@@ -9,7 +9,10 @@ public class Usuario
 
     public string PasswordHash { get; set; }
 
-    // Solo 1 tipo de usuario real (puede alquilar y publicar propiedades)
+    // Nuevos campos opcionales
+    public string? Telefono { get; set; } 
+    public string? Direccion { get; set; } 
+
     public bool EsAdmin { get; set; } = false;
 
     // Para posible deshabilitación en futuro
