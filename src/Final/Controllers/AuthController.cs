@@ -26,10 +26,11 @@ public class AuthController : ControllerBase
         try
         {
             var usuario = await _usuarioService.RegisterAsync(dto);
-            return Ok(new { 
-                message = "Registro exitoso", 
+            return Ok(new
+            {
+                message = "Registro exitoso",
                 usuarioId = usuario.Id,
-                nextStep = "Por favor inicia sesión" 
+                nextStep = "Por favor inicia sesión"
             });
         }
         catch (ArgumentException ex)
@@ -51,8 +52,9 @@ public class AuthController : ControllerBase
         try
         {
             var (usuario, token) = await _usuarioService.LoginAsync(dto);
-            return Ok(new { 
-                usuario, 
+            return Ok(new
+            {
+                usuario,
                 token,
                 expiresIn = 28800 // 8 horas en segundos
             });
@@ -61,9 +63,19 @@ public class AuthController : ControllerBase
         {
             return Unauthorized(new { error = "Credenciales inválidas" });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Error interno del servidor" });
+            // ✅ Muestra el error REAL para depuración
+            Console.WriteLine($"🔥 ERROR EN LOGIN: {ex.Message}");
+            Console.WriteLine($"🔥 STACK TRACE: {ex.StackTrace}");
+
+            return StatusCode(500, new
+            {
+                error = "Error interno del servidor",
+                // Solo en desarrollo - muestra detalles
+                detalles = ex.Message,
+                innerException = ex.InnerException?.Message
+            });
         }
     }
 
@@ -109,7 +121,8 @@ public class AuthController : ControllerBase
         {
             var token = await _usuarioService.GenerarTokenRecuperacionAsync(dto.Email);
             // En producción: enviar email con token
-            return Ok(new { 
+            return Ok(new
+            {
                 message = "Se ha enviado un enlace de recuperación a tu email",
                 token = token // Solo para desarrollo
             });

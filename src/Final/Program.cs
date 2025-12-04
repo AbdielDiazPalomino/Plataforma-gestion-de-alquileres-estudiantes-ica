@@ -2,6 +2,9 @@ using Final.Services;
 using Final.Data;
 using Final.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,19 +16,37 @@ builder.Services.AddSwaggerGen();
 // ¡IMPORTANTE! esto hace que funcionen las API Controllers
 builder.Services.AddControllers();
 
+// Configurar JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
 
+builder.Services.AddAuthorization();
 
+// Servicios
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPropiedadService, PropiedadService>();
 builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IResenaService, ResenaService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
+// Repositorios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPropiedadRepository, PropiedadRepository>();
 builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
 builder.Services.AddScoped<IResenaRepository, ResenaRepository>();
-
 
 // Configurar PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -50,10 +71,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// ¡IMPORTANTE! Agrega autenticación y autorización si las usas
-// app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // CREA TABLAS AUTOMÁTICAMENTE
 using (var scope = app.Services.CreateScope())
@@ -63,16 +82,14 @@ using (var scope = app.Services.CreateScope())
     {
         var dbContext = services.GetRequiredService<AppDbContext>();
         
-        // Esto aplica migraciones automáticamente
-        // Si no hay tablas, las crea
-        // Si hay migraciones pendientes, las aplica
-        dbContext.Database.Migrate();
+        // ✅ CAMBIA ESTO: Usa EnsureCreated() en lugar de Migrate()
+        dbContext.Database.EnsureCreated();
         
-        Console.WriteLine("Base de datos migrada exitosamente");
+        Console.WriteLine("✅ Base de datos creada exitosamente");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error al migrar la base de datos: {ex.Message}");
+        Console.WriteLine($"❌ Error al crear la base de datos: {ex.Message}");
         throw;
     }
 }
@@ -80,30 +97,4 @@ using (var scope = app.Services.CreateScope())
 // Mapea los controladores API 
 app.MapControllers();
 
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
