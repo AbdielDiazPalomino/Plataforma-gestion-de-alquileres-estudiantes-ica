@@ -1,3 +1,4 @@
+using Final.DTOs.Auth;
 using Final.DTOs.Usuario;
 using Final.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new { error = "Error interno del servidor" });
         }
@@ -142,16 +143,4 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { error = "Error interno del servidor" });
         }
     }
-}
-
-// DTOs adicionales
-public class ForgotPasswordDto
-{
-    public string Email { get; set; }
-}
-
-public class ResetPasswordDto
-{
-    public string Token { get; set; }
-    public string NewPassword { get; set; }
 }
