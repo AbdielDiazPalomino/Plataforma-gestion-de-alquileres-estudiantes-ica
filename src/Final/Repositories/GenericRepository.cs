@@ -1,7 +1,6 @@
-// Repositories/GenericRepository.cs
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Final.Data; // ¡AGREGA ESTA LÍNEA!
+using Final.Data; 
 
 namespace Final.Repositories
 {
